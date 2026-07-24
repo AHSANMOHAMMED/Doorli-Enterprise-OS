@@ -1,0 +1,6 @@
+app_name = "doorli_core"
+app_title = "Doorli Enterprise OS"
+app_publisher = "Doorli"
+app_description = "Core logic for Doorli Enterprise ERP"
+app_email = "engineering@doorli.com"
+app_license = "Proprietary"
