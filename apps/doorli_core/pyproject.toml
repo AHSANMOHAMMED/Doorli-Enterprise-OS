@@ -1,0 +1,9 @@
+[project]
+name = "doorli_core"
+version = "0.0.1"
+description = "Doorli Enterprise OS Custom App"
+dependencies = []
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
