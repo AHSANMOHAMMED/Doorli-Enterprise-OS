@@ -103,3 +103,28 @@ def create_order(**kwargs):
             "status": "error",
             "message": str(e)
         }
+
+def create_vendor_user(email, first_name, company_name):
+    """
+    Creates a User account for a vendor so they can log in.
+    Automatically assigns them to their specific Company.
+    """
+    if not frappe.db.exists("User", email):
+        user = frappe.get_doc({
+            "doctype": "User",
+            "email": email,
+            "first_name": first_name,
+            "send_welcome_email": 1,
+            "roles": [{"role": "Vendor"}],
+        })
+        user.insert(ignore_permissions=True)
+        
+        # Add User Permission so they only see their Company's data
+        perm = frappe.get_doc({
+            "doctype": "User Permission",
+            "user": email,
+            "allow": "Company",
+            "for_value": company_name
+        })
+        perm.insert(ignore_permissions=True)
+        frappe.db.commit()
