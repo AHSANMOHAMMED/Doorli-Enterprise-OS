@@ -22,3 +22,11 @@ website_context = {
     "favicon": "/assets/doorli_core/images/logo.png",
     "splash_image": "/assets/doorli_core/images/logo.png",
 }
+
+# --- Two-Way Sync ---
+# Fire the reverse webhook whenever a Sales Order is updated
+doc_events = {
+    "Sales Order": {
+        "on_update": "doorli_core.sync.send_status_to_marketplace"
+    }
+}
