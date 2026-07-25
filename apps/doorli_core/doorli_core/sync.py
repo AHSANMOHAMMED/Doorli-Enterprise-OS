@@ -11,7 +11,7 @@ def send_status_to_marketplace(doc, method):
         return
         
     # The URL of your Next.js marketplace API
-    MARKETPLACE_API_URL = "https://doorli.com/api/erp-sync"
+    MARKETPLACE_API_URL = "https://doorli.me/api/erp-sync"
     
     # We should secure this with a secret in a real environment
     SECRET = "DOORLI_ENTERPRISE_SECRET_2026_xyz"
