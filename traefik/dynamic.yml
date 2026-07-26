@@ -1,0 +1,29 @@
+# Static Traefik routes (file provider).
+# Docker provider is disabled because Docker 29+ rejects Traefik's old API client.
+http:
+  routers:
+    frappe-http:
+      rule: Host(`enterprise.doorli.me`)
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+      service: frontend
+    frappe-https:
+      rule: Host(`enterprise.doorli.me`)
+      entryPoints:
+        - websecure
+      service: frontend
+      tls:
+        certResolver: myresolver
+
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+
+  services:
+    frontend:
+      loadBalancer:
+        servers:
+          - url: http://frontend:8080

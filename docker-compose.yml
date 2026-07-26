@@ -2,12 +2,14 @@ version: '3'
 
 services:
   traefik:
-    image: "traefik:v2.10"
+    # Docker 29+ rejects Traefik's embedded Docker API client (min API 1.40).
+    # Use the file provider instead of --providers.docker.
+    image: "traefik:v3.3"
     container_name: "traefik"
     command:
       - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
+      - "--providers.file.watch=true"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
@@ -18,7 +20,7 @@ services:
       - "443:443"
     volumes:
       - "./letsencrypt:/letsencrypt"
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"
     deploy:
       restart_policy:
         condition: on-failure
@@ -28,10 +30,14 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    # Localhost-only publish so marketplace can SSH-tunnel to Frappe methods
+    # until OCI security lists allow public 80/443.
+    ports:
+      - "127.0.0.1:8000:8000"
     env_file:
       - .env
     environment:
-      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:-DOORLI_ENTERPRISE_SECRET_2026_xyz}
+      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:?DOORLI_WEBHOOK_SECRET must be set in .env}
       DOORLI_MARKETPLACE_ORDER_STATUS_URL: ${DOORLI_MARKETPLACE_ORDER_STATUS_URL:-https://doorli.me/api/v1/erp-webhooks/order-status}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
@@ -81,7 +87,10 @@ services:
         if [ ! -f sites/$$FRAPPE_SITE_NAME_HEADER/site_config.json ]; then
           bench new-site $$FRAPPE_SITE_NAME_HEADER --no-mariadb-socket --admin-password=$$ADMIN_PASSWORD --db-root-password=$$DB_ROOT_PASSWORD --install-app erpnext --set-default;
         fi;
-        bench --site $$FRAPPE_SITE_NAME_HEADER install-app doorli_core || true;
+        if ! bench --site $$FRAPPE_SITE_NAME_HEADER list-apps | grep -qw doorli_core; then
+          bench --site $$FRAPPE_SITE_NAME_HEADER install-app doorli_core;
+        fi;
+        bench --site $$FRAPPE_SITE_NAME_HEADER migrate;
         bench --site $$FRAPPE_SITE_NAME_HEADER set-config -g disable_telemetry 1;
     env_file:
       - .env
@@ -144,11 +153,11 @@ services:
       - bench
       - worker
       - --queue
-      - default,1,2
+      - default
     env_file:
       - .env
     environment:
-      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:-DOORLI_ENTERPRISE_SECRET_2026_xyz}
+      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:?DOORLI_WEBHOOK_SECRET must be set in .env}
       DOORLI_MARKETPLACE_ORDER_STATUS_URL: ${DOORLI_MARKETPLACE_ORDER_STATUS_URL:-https://doorli.me/api/v1/erp-webhooks/order-status}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
@@ -167,7 +176,7 @@ services:
     env_file:
       - .env
     environment:
-      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:-DOORLI_ENTERPRISE_SECRET_2026_xyz}
+      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:?DOORLI_WEBHOOK_SECRET must be set in .env}
       DOORLI_MARKETPLACE_ORDER_STATUS_URL: ${DOORLI_MARKETPLACE_ORDER_STATUS_URL:-https://doorli.me/api/v1/erp-webhooks/order-status}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
@@ -186,7 +195,7 @@ services:
     env_file:
       - .env
     environment:
-      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:-DOORLI_ENTERPRISE_SECRET_2026_xyz}
+      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:?DOORLI_WEBHOOK_SECRET must be set in .env}
       DOORLI_MARKETPLACE_ORDER_STATUS_URL: ${DOORLI_MARKETPLACE_ORDER_STATUS_URL:-https://doorli.me/api/v1/erp-webhooks/order-status}
     volumes:
       - sites:/home/frappe/frappe-bench/sites

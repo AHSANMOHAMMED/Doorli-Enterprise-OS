@@ -19,8 +19,14 @@ website_context = {
 }
 
 # --- Two-Way Sync ---
+# Sales Order lifecycle drives confirmed/cancelled; Delivery Note submission
+# drives delivered. All callbacks are queued (see doorli_core.sync).
 doc_events = {
     "Sales Order": {
-        "on_update": "doorli_core.sync.send_status_to_marketplace"
-    }
+        "on_submit": "doorli_core.sync.on_sales_order_submit",
+        "on_cancel": "doorli_core.sync.on_sales_order_cancel",
+    },
+    "Delivery Note": {
+        "on_submit": "doorli_core.sync.on_delivery_note_submit",
+    },
 }
