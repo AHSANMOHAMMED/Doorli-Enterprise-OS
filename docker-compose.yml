@@ -28,11 +28,14 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    env_file:
+      - .env
+    environment:
+      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:-DOORLI_ENTERPRISE_SECRET_2026_xyz}
+      DOORLI_MARKETPLACE_ORDER_STATUS_URL: ${DOORLI_MARKETPLACE_ORDER_STATUS_URL:-https://doorli.me/api/v1/erp-webhooks/order-status}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
-    env_file:
-      - .env
 
   configurator:
     build: .
@@ -75,7 +78,10 @@ services:
         wait-for-it -t 120 redis-cache:6379;
         wait-for-it -t 120 redis-queue:6379;
         export FORCE=1;
-        bench new-site $$FRAPPE_SITE_NAME_HEADER --no-mariadb-socket --admin-password=$$ADMIN_PASSWORD --db-root-password=$$DB_ROOT_PASSWORD --install-app erpnext --set-default;
+        if [ ! -f sites/$$FRAPPE_SITE_NAME_HEADER/site_config.json ]; then
+          bench new-site $$FRAPPE_SITE_NAME_HEADER --no-mariadb-socket --admin-password=$$ADMIN_PASSWORD --db-root-password=$$DB_ROOT_PASSWORD --install-app erpnext --set-default;
+        fi;
+        bench --site $$FRAPPE_SITE_NAME_HEADER install-app doorli_core || true;
         bench --site $$FRAPPE_SITE_NAME_HEADER set-config -g disable_telemetry 1;
     env_file:
       - .env
@@ -141,6 +147,9 @@ services:
       - default,1,2
     env_file:
       - .env
+    environment:
+      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:-DOORLI_ENTERPRISE_SECRET_2026_xyz}
+      DOORLI_MARKETPLACE_ORDER_STATUS_URL: ${DOORLI_MARKETPLACE_ORDER_STATUS_URL:-https://doorli.me/api/v1/erp-webhooks/order-status}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -157,6 +166,9 @@ services:
       - long,default,short
     env_file:
       - .env
+    environment:
+      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:-DOORLI_ENTERPRISE_SECRET_2026_xyz}
+      DOORLI_MARKETPLACE_ORDER_STATUS_URL: ${DOORLI_MARKETPLACE_ORDER_STATUS_URL:-https://doorli.me/api/v1/erp-webhooks/order-status}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -173,6 +185,9 @@ services:
       - short,default
     env_file:
       - .env
+    environment:
+      DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:-DOORLI_ENTERPRISE_SECRET_2026_xyz}
+      DOORLI_MARKETPLACE_ORDER_STATUS_URL: ${DOORLI_MARKETPLACE_ORDER_STATUS_URL:-https://doorli.me/api/v1/erp-webhooks/order-status}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs

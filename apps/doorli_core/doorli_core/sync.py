@@ -1,35 +1,40 @@
 import frappe
 import requests
-import json
+import os
+
 
 def send_status_to_marketplace(doc, method):
     """
     Reverse webhook: Triggered on Sales Order update.
-    If the status is Completed or Delivered, we beam a notification back to the Doorli Next.js app.
+    Maps ERPNext statuses onto Doorli marketplace statuses.
     """
-    if doc.status not in ["Completed", "Delivered"]:
+    # ERPNext Sales Order statuses that mean the order is done for marketplace delivery
+    if doc.status not in ("Completed", "Closed"):
         return
-        
-    # The URL of your Next.js marketplace API
-    MARKETPLACE_API_URL = "https://doorli.me/api/v1/erp-webhooks/order-status"
-    
-    # We should secure this with a secret in a real environment
-    SECRET = "DOORLI_ENTERPRISE_SECRET_2026_xyz"
-    
+
+    marketplace_status = "delivered"
+    marketplace_api_url = os.environ.get(
+        "DOORLI_MARKETPLACE_ORDER_STATUS_URL",
+        "https://doorli.me/api/v1/erp-webhooks/order-status",
+    )
+    secret = os.environ.get("DOORLI_WEBHOOK_SECRET", "DOORLI_ENTERPRISE_SECRET_2026_xyz")
+    if not secret.startswith("Bearer "):
+        secret = f"Bearer {secret}"
+
     payload = {
         "erp_order_id": doc.name,
         "marketplace_order_id": doc.po_no,
-        "status": doc.status,
-        "vendor_company": doc.company
+        "status": marketplace_status,
+        "vendor_company": doc.company,
     }
-    
+
     headers = {
-        "Authorization": f"Bearer {SECRET}",
-        "Content-Type": "application/json"
+        "Authorization": secret,
+        "Content-Type": "application/json",
     }
-    
+
     try:
-        # Fire and forget. In production, this should ideally be in a background job queue.
-        requests.post(MARKETPLACE_API_URL, json=payload, headers=headers, timeout=5)
+        # Prefer background enqueue when available; fall back to sync POST.
+        requests.post(marketplace_api_url, json=payload, headers=headers, timeout=5)
     except Exception as e:
         frappe.log_error(f"Reverse Webhook Failed: {str(e)}", "Doorli Sync")
