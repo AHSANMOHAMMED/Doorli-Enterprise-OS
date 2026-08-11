@@ -240,6 +240,23 @@ def create_order(**kwargs):
             "message": "Unknown or unprovisioned company; provision the vendor first",
         }
 
+    # Super-admin control plane gate: reject intake for suspended/locked tenants
+    # and for tenants cut off by module policy.
+    from doorli_core.control import tenancy_allows_selling, module_enabled
+    if not tenancy_allows_selling(company):
+        status = frappe.db.get_value("Company", company, "doorli_control_status")
+        frappe.local.response.http_status_code = 409
+        return {
+            "status": "error",
+            "message": f"Tenant {company} is {status} by Doorli super-admin; order intake disabled",
+        }
+    if not module_enabled("selling"):
+        frappe.local.response.http_status_code = 409
+        return {
+            "status": "error",
+            "message": "Selling module disabled by Doorli super-admin; order intake disabled",
+        }
+
     # Idempotency: a repeat callback returns the existing order rather than duplicating.
     existing = frappe.db.get_value(
         "Sales Order", {"po_no": idempotency_key, "company": company}, "name"

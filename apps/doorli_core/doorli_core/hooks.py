@@ -8,6 +8,9 @@ app_license = "Proprietary"
 # --- Doorli White-Labeling Overrides ---
 app_logo_url = "/assets/doorli_core/images/logo.png"
 
+# Bootstrap the super-admin control fields after migrate.
+after_migrate = ["doorli_core.control.after_migrate"]
+
 # Inject custom CSS when assets exist
 app_include_css = "/assets/doorli_core/css/doorli.bundle.css"
 web_include_css = "/assets/doorli_core/css/doorli.bundle.css"
