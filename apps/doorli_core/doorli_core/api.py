@@ -328,3 +328,39 @@ def create_order(**kwargs):
         frappe.log_error(frappe.get_traceback(), _("Doorli Webhook Sync Failed"))
         frappe.local.response.http_status_code = 500
         return {"status": "error", "message": str(e)}
+
+# ---------------------------------------------------------------------------
+# Super-admin control plane passthroughs.
+# The marketplace control plane calls doorli_core.api.control_* (see
+# services/api/src/lib/control.ts) which delegate to the doorli_core.control
+# channel that persists tenant / module / maintenance state.
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist(allow_guest=True)
+def control_status(**kwargs):
+    from doorli_core import control as _control
+    return _control.control_status(**kwargs)
+
+
+@frappe.whitelist(allow_guest=True)
+def control_tenant(**kwargs):
+    from doorli_core import control as _control
+    return _control.control_tenant(**kwargs)
+
+
+@frappe.whitelist(allow_guest=True)
+def control_module(**kwargs):
+    from doorli_core import control as _control
+    return _control.control_module(**kwargs)
+
+
+@frappe.whitelist(allow_guest=True)
+def control_settings(**kwargs):
+    from doorli_core import control as _control
+    return _control.control_settings(**kwargs)
+
+
+@frappe.whitelist(allow_guest=True)
+def control_quota(**kwargs):
+    from doorli_core import control as _control
+    return _control.control_quota(**kwargs)

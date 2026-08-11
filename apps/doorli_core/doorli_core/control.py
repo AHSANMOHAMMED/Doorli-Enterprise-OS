@@ -222,9 +222,9 @@ def control_status(**kwargs):
     verify_doorli_webhook()
     _ensure_custom_fields()
 
-    company = kwargs.get("company") or None
+    company = kwargs.get("company") or kwargs.get("tenantId") or None
     if company:
-        companies = [get_tenancy(company.replace(" ", ""))] if frappe.db.exists("Company", company) else []
+        companies = [get_tenancy(company)] if frappe.db.exists("Company", company) else []
     else:
         names = frappe.get_all("Company", pluck="name")
         companies = [get_tenancy(n) for n in names]
@@ -292,6 +292,30 @@ def control_module(**kwargs):
     frappe.db.commit()
 
     return {"success": True, "globalModules": _read_modules()}
+
+
+@frappe.whitelist(allow_guest=True)
+def control_quota(**kwargs):
+    verify_doorli_webhook()
+    frappe.set_user("Administrator")
+    _ensure_custom_fields()
+
+    company = kwargs.get("company") or kwargs.get("tenantId") or ""
+    if not company or not frappe.db.exists("Company", company):
+        frappe.local.response.http_status_code = 400
+        return {"success": False, "error": f"Unknown company {company}"}
+
+    data = {}
+    if kwargs.get("plan"):
+        data["doorli_plan"] = str(kwargs.get("plan"))
+    if kwargs.get("maxUsers") is not None and kwargs.get("maxUsers") != "":
+        data["doorli_max_users"] = int(kwargs.get("maxUsers"))
+
+    if data:
+        frappe.db.set_value("Company", company, data)
+        frappe.db.commit()
+
+    return {"success": True, "tenant": get_tenancy(company)}
 
 
 @frappe.whitelist(allow_guest=True)
