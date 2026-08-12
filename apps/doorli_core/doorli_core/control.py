@@ -23,6 +23,7 @@ COMPANY_FIELDS = [
     {"fieldname": "doorli_ai_enabled", "label": "Doorli AI Enabled", "fieldtype": "Check", "default": 1},
     {"fieldname": "doorli_max_users", "label": "Doorli Max Users", "fieldtype": "Int"},
     {"fieldname": "doorli_quota_override", "label": "Doorli Quota Override", "fieldtype": "JSON"},
+    {"fieldname": "doorli_enabled_modules", "label": "Doorli Enabled ERP Modules", "fieldtype": "JSON"},
 ]
 
 GLOBAL_SETTINGS_FIELD = {
@@ -175,10 +176,25 @@ def _write_modules(modules):
     frappe.db.commit()
 
 
+def _tenant_modules(raw):
+    """Merge a tenant allow-list with global defaults; absent modules remain enabled."""
+    modules = dict(DEFAULT_MODULES)
+    if isinstance(raw, str):
+        try:
+            raw = json.loads(raw)
+        except Exception:
+            raw = None
+    if isinstance(raw, dict):
+        for key in modules:
+            if key in raw:
+                modules[key] = bool(raw[key])
+    return modules
+
+
 def get_tenancy(company):
     doc = frappe.db.get_value("Company", company, [
         "name", "doorli_control_status", "doorli_control_reason",
-        "doorli_plan", "doorli_ai_enabled", "doorli_plan_expires_on",
+        "doorli_plan", "doorli_ai_enabled", "doorli_plan_expires_on", "doorli_enabled_modules",
     ], as_dict=True)
     if not doc:
         return {
@@ -187,6 +203,7 @@ def get_tenancy(company):
             "status": "active",
             "plan": "trial",
             "aiEnabled": True,
+            "enabledModules": dict(DEFAULT_MODULES),
         }
     return {
         "tenantId": doc["name"],
@@ -196,6 +213,7 @@ def get_tenancy(company):
         "plan": doc.get("doorli_plan") or "trial",
         "aiEnabled": bool(doc.get("doorli_ai_enabled", 1)),
         "plan_expires_on": doc.get("doorli_plan_expires_on"),
+        "enabledModules": _tenant_modules(doc.get("doorli_enabled_modules")),
     }
 
 
@@ -205,7 +223,10 @@ def tenancy_allows_selling(company):
     return status in ("active", "")
 
 
-def module_enabled(module_key):
+def module_enabled(module_key, company=None):
+    if company:
+        raw = frappe.db.get_value("Company", company, "doorli_enabled_modules")
+        return bool(_tenant_modules(raw).get(module_key, _read_modules().get(module_key, True)))
     return bool(_read_modules().get(module_key, True))
 
 
@@ -286,11 +307,21 @@ def control_module(**kwargs):
         frappe.local.response.http_status_code = 400
         return {"success": False, "error": f"Unknown module {module_key}"}
 
-    modules = _read_modules()
-    modules[module_key] = _as_bool(kwargs.get("isEnabled", kwargs.get("enabled", True)))
-    _write_modules(modules)
-    frappe.db.commit()
+    company = kwargs.get("company") or kwargs.get("tenantId") or None
+    enabled = _as_bool(kwargs.get("isEnabled", kwargs.get("enabled", True)))
+    if company:
+        if not frappe.db.exists("Company", company):
+            frappe.local.response.http_status_code = 400
+            return {"success": False, "error": f"Unknown company {company}"}
+        current = _tenant_modules(frappe.db.get_value("Company", company, "doorli_enabled_modules"))
+        current[module_key] = enabled
+        frappe.db.set_value("Company", company, "doorli_enabled_modules", json.dumps(current))
+        frappe.db.commit()
+        return {"success": True, "tenant": get_tenancy(company)}
 
+    modules = _read_modules()
+    modules[module_key] = enabled
+    _write_modules(modules)
     return {"success": True, "globalModules": _read_modules()}
 
 
