@@ -330,6 +330,63 @@ def create_order(**kwargs):
         return {"status": "error", "message": str(e)}
 
 # ---------------------------------------------------------------------------
+# Marketplace status callback
+# ---------------------------------------------------------------------------
+@frappe.whitelist(allow_guest=True)
+def update_order_status(**kwargs):
+    """Accept marketplace status updates for an Enterprise Sales Order.
+
+    The callback is deliberately idempotent: repeated status notifications
+    append no duplicate state mutation and return the canonical order id.
+    """
+    verify_doorli_webhook()
+    frappe.set_user("Administrator")
+    erp_order_id = kwargs.get("erp_order_id") or ""
+    marketplace_order_id = kwargs.get("marketplace_order_id") or ""
+    vendor_company = kwargs.get("vendor_company") or kwargs.get("company") or ""
+    status = (kwargs.get("status") or "").strip().lower()
+    if not status or not (erp_order_id or marketplace_order_id):
+        frappe.local.response.http_status_code = 400
+        return {"status": "error", "message": "erp_order_id or marketplace_order_id and status are required"}
+    order_name = None
+    if erp_order_id:
+        order_name = frappe.db.get_value(
+            "Sales Order",
+            {"name": erp_order_id, **({"company": vendor_company} if vendor_company else {})},
+            "name",
+        )
+    if not order_name and marketplace_order_id:
+        order_name = frappe.db.get_value(
+            "Sales Order",
+            {"po_no": marketplace_order_id, **({"company": vendor_company} if vendor_company else {})},
+            "name",
+        )
+    if not order_name:
+        frappe.local.response.http_status_code = 404
+        return {"status": "error", "message": "Sales Order not found"}
+    try:
+        order = frappe.get_doc("Sales Order", order_name)
+        if status not in {"confirmed", "processing", "delivered", "completed", "cancelled"}:
+            frappe.local.response.http_status_code = 400
+            return {"status": "error", "message": f"Unsupported status: {status}"}
+
+        # Replays must not create duplicate comments or repeat cancellation.
+        marker = f"Doorli marketplace status: {status}"
+        if frappe.db.exists("Comment", {"reference_doctype": "Sales Order", "reference_name": order.name, "content": ["like", f"%{marker}%"]}):
+            return {"status": "success", "erp_order_id": order.name, "marketplace_order_id": marketplace_order_id, "order_status": status, "idempotent": True}
+
+        if status == "cancelled" and order.docstatus == 1:
+            order.cancel()
+        order.add_comment("Info", marker)
+        frappe.db.commit()
+        return {"status": "success", "erp_order_id": order.name, "marketplace_order_id": marketplace_order_id, "order_status": status, "idempotent": False}
+    except Exception as e:
+        frappe.db.rollback()
+        frappe.log_error(frappe.get_traceback(), _("Doorli update_order_status failed"))
+        frappe.local.response.http_status_code = 500
+        return {"status": "error", "message": str(e)}
+
+# ---------------------------------------------------------------------------
 # Super-admin control plane passthroughs.
 # The marketplace control plane calls doorli_core.api.control_* (see
 # services/api/src/lib/control.ts) which delegate to the doorli_core.control

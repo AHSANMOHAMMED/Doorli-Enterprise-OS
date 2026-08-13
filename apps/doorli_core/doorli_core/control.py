@@ -51,6 +51,14 @@ DEFAULT_MODULES = {
     "settings": True,
 }
 
+# Doorli capability keys map to the module keys used by Enterprise navigation.
+DOORLI_MODULE_ALIASES = {
+    "pos": "selling",
+    "pos_integration": "selling",
+    "inventory_management": "stock",
+    "accounting_reports": "accounting",
+}
+
 MAINTENANCE_KEY = "doorli_maintenance"
 
 
@@ -282,6 +290,7 @@ def control_module(**kwargs):
     _ensure_custom_fields()
 
     module_key = kwargs.get("moduleKey") or kwargs.get("module_key") or ""
+    module_key = DOORLI_MODULE_ALIASES.get(module_key, module_key)
     if module_key not in DEFAULT_MODULES:
         frappe.local.response.http_status_code = 400
         return {"success": False, "error": f"Unknown module {module_key}"}
