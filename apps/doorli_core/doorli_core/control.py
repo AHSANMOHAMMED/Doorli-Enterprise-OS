@@ -242,7 +242,15 @@ def module_enabled(module_key, company=None):
 
 
 def maintenance_active():
-    return bool(_singles_value(MAINTENANCE_KEY))
+    raw = _singles_value(MAINTENANCE_KEY)
+    if isinstance(raw, str):
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, dict):
+                raw = parsed.get("active", False)
+        except Exception:
+            pass
+    return _as_bool(raw, False)
 
 
 # ---------------------------------------------------------------------------
