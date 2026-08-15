@@ -1,12 +1,21 @@
 #!/bin/bash
 set -euo pipefail
 
-# Setup .env if it doesn't exist
+# Production startup must never silently use placeholder credentials.
 if [ ! -f .env ]; then
-  echo "Creating .env from .env.example..."
-  cp .env.example .env
-  echo "WARNING: Review .env and change default passwords/secrets before production."
+  echo "Missing .env. Copy .env.example, set production values, then rerun." >&2
+  exit 1
 fi
+set -a
+# shellcheck disable=SC1091
+. ./.env
+set +a
+: "${DOORLI_WEBHOOK_SECRET:?DOORLI_WEBHOOK_SECRET must be set in .env}"
+: "${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD must be set in .env}"
+: "${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set in .env}"
+case "$DB_ROOT_PASSWORD:$ADMIN_PASSWORD:$DOORLI_WEBHOOK_SECRET" in
+  *CHANGE_ME*) echo "Placeholder credentials are not allowed in production .env" >&2; exit 1 ;;
+esac
 
 echo "Starting core infra (db/redis)..."
 docker compose up -d db redis-cache redis-queue

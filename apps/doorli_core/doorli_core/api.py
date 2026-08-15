@@ -222,7 +222,15 @@ def create_order(**kwargs):
     items = kwargs.get("items", [])
 
     if isinstance(items, str):
-        items = json.loads(items)
+        try:
+            items = json.loads(items)
+        except (TypeError, ValueError):
+            frappe.local.response.http_status_code = 400
+            return {"status": "error", "message": "items must be valid JSON"}
+
+    if not isinstance(items, list):
+        frappe.local.response.http_status_code = 400
+        return {"status": "error", "message": "items must be an array"}
 
     if not idempotency_key:
         frappe.local.response.http_status_code = 400
@@ -242,7 +250,7 @@ def create_order(**kwargs):
 
     # Super-admin control plane gate: reject intake for suspended/locked tenants
     # and for tenants cut off by module policy.
-    from doorli_core.control import tenancy_allows_selling, module_enabled
+    from doorli_core.control import tenancy_allows_selling, module_enabled, maintenance_active
     if not tenancy_allows_selling(company):
         status = frappe.db.get_value("Company", company, "doorli_control_status")
         frappe.local.response.http_status_code = 409
@@ -250,11 +258,11 @@ def create_order(**kwargs):
             "status": "error",
             "message": f"Tenant {company} is {status} by Doorli super-admin; order intake disabled",
         }
-    if not module_enabled("selling"):
+    if not module_enabled("selling", company) or maintenance_active():
         frappe.local.response.http_status_code = 409
         return {
             "status": "error",
-            "message": "Selling module disabled by Doorli super-admin; order intake disabled",
+            "message": "Selling module disabled or Enterprise is in maintenance mode; order intake disabled",
         }
 
     # Idempotency: a repeat callback returns the existing order rather than duplicating.
@@ -277,7 +285,7 @@ def create_order(**kwargs):
             "customer": customer,
             "company": company,
             "po_no": idempotency_key,
-            "currency": "LKR",
+            "currency": kwargs.get("currency") or "LKR",
             "conversion_rate": 1,
             "selling_price_list": _selling_price_list(),
             "price_list_currency": "LKR",
@@ -292,10 +300,19 @@ def create_order(**kwargs):
             if not item_code:
                 continue
             _ensure_item(item_code, item.get("item_name"))
+            try:
+                quantity = float(item.get("qty", 1))
+                rate = float(item.get("price", 0.0))
+            except (TypeError, ValueError):
+                frappe.local.response.http_status_code = 400
+                return {"status": "error", "message": "item qty and price must be numeric"}
+            if quantity <= 0 or rate < 0:
+                frappe.local.response.http_status_code = 400
+                return {"status": "error", "message": "item qty must be positive and price cannot be negative"}
             sales_order.append("items", {
                 "item_code": item_code,
-                "qty": float(item.get("qty", 1)),
-                "rate": float(item.get("price", 0.0)),
+                "qty": quantity,
+                "rate": rate,
             })
 
         if not sales_order.items:
@@ -377,6 +394,10 @@ def update_order_status(**kwargs):
 
         if status == "cancelled" and order.docstatus == 1:
             order.cancel()
+        elif status in {"delivered", "completed"} and order.docstatus == 1:
+            order.db_set("status", "Completed")
+        elif status == "processing" and order.docstatus == 1:
+            order.db_set("status", "To Deliver and Bill")
         order.add_comment("Info", marker)
         frappe.db.commit()
         return {"status": "success", "erp_order_id": order.name, "marketplace_order_id": marketplace_order_id, "order_status": status, "idempotent": False}
@@ -385,6 +406,27 @@ def update_order_status(**kwargs):
         frappe.log_error(frappe.get_traceback(), _("Doorli update_order_status failed"))
         frappe.local.response.http_status_code = 500
         return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_inventory(**kwargs):
+    """Return tenant-scoped stock for the marketplace inventory overlay."""
+    verify_doorli_webhook()
+    company = kwargs.get("company") or ""
+    item_code = kwargs.get("item_code") or ""
+    warehouse = kwargs.get("warehouse") or ""
+    if not company or not item_code:
+        frappe.local.response.http_status_code = 400
+        return {"status": "error", "message": "company and item_code are required"}
+    if not frappe.db.exists("Company", company):
+        frappe.local.response.http_status_code = 404
+        return {"status": "error", "message": "Unknown company"}
+    filters = {"company": company, "item_code": item_code}
+    if warehouse:
+        filters["warehouse"] = warehouse
+    rows = frappe.get_all("Stock Ledger Entry", filters=filters, fields=["actual_qty", "warehouse"])
+    quantity = sum(float(row.get("actual_qty") or 0) for row in rows)
+    return {"status": "success", "data": [{"actual_qty": quantity, "warehouse": warehouse or None}]}
 
 # ---------------------------------------------------------------------------
 # Super-admin control plane passthroughs.

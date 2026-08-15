@@ -175,7 +175,7 @@ def _read_modules():
     if isinstance(data, dict):
         for k, v in data.items():
             if k in merged:
-                merged[k] = bool(v)
+                merged[k] = _as_bool(v)
     return merged
 
 
@@ -184,9 +184,9 @@ def _write_modules(modules):
     frappe.db.commit()
 
 
-def _tenant_modules(raw):
-    """Merge a tenant allow-list with global defaults; absent modules remain enabled."""
-    modules = dict(DEFAULT_MODULES)
+def _tenant_modules(raw, defaults=None):
+    """Merge tenant overrides onto global module defaults."""
+    modules = dict(defaults or DEFAULT_MODULES)
     if isinstance(raw, str):
         try:
             raw = json.loads(raw)
@@ -195,7 +195,7 @@ def _tenant_modules(raw):
     if isinstance(raw, dict):
         for key in modules:
             if key in raw:
-                modules[key] = bool(raw[key])
+                modules[key] = _as_bool(raw[key])
     return modules
 
 
@@ -221,7 +221,9 @@ def get_tenancy(company):
         "plan": doc.get("doorli_plan") or "trial",
         "aiEnabled": bool(doc.get("doorli_ai_enabled", 1)),
         "plan_expires_on": doc.get("doorli_plan_expires_on"),
-        "enabledModules": _tenant_modules(doc.get("doorli_enabled_modules")),
+        "maxUsers": doc.get("doorli_max_users"),
+        "quotaOverride": doc.get("doorli_quota_override"),
+        "enabledModules": _tenant_modules(doc.get("doorli_enabled_modules"), _read_modules()),
     }
 
 
@@ -232,10 +234,11 @@ def tenancy_allows_selling(company):
 
 
 def module_enabled(module_key, company=None):
+    global_modules = _read_modules()
     if company:
         raw = frappe.db.get_value("Company", company, "doorli_enabled_modules")
-        return bool(_tenant_modules(raw).get(module_key, _read_modules().get(module_key, True)))
-    return bool(_read_modules().get(module_key, True))
+        return _as_bool(_tenant_modules(raw, global_modules).get(module_key, True))
+    return _as_bool(global_modules.get(module_key, True))
 
 
 def maintenance_active():
@@ -262,8 +265,10 @@ def control_status(**kwargs):
         "success": True,
         "providers": ["simple", "enterprise"],
         "provider": "enterprise",
-        "globalModules": _read_modules(),
-        "maintenance": {"active": maintenance_active()},
+            "globalModules": _read_modules(),
+            "globalModuleToggles": _read_modules(),
+            "maintenance": {"active": maintenance_active()},
+            "settings": {"maintenance": maintenance_active()},
         "tenants": companies,
     }
 

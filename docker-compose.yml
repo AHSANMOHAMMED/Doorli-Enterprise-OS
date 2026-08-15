@@ -7,7 +7,6 @@ services:
     image: "traefik:v3.3"
     container_name: "traefik"
     command:
-      - "--api.insecure=true"
       - "--providers.file.filename=/etc/traefik/dynamic.yml"
       - "--providers.file.watch=true"
       - "--entrypoints.web.address=:80"
