@@ -1,4 +1,5 @@
 import hmac
+import hashlib
 import json
 import os
 import re
@@ -49,7 +50,7 @@ def verify_doorli_webhook():
 def _make_abbr(vendor_id, business_name):
     """Deterministic, collision-resistant company abbreviation."""
     base = re.sub(r"[^A-Za-z0-9]", "", (business_name or "V")).upper()[:4] or "VEN"
-    suffix = re.sub(r"[^A-Za-z0-9]", "", str(vendor_id)).upper()[:4]
+    suffix = hashlib.sha1(str(vendor_id).encode()).hexdigest()[:6].upper()
     return (base + suffix)[:10] or "VEN"
 
 
