@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 280" role="img" aria-label="Doorli">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0a0f2e"/><stop offset="50%" stop-color="#0c1a4a"/><stop offset="100%" stop-color="#061228"/></linearGradient>
+    <linearGradient id="door" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#378ADD" stop-opacity=".5"/><stop offset="100%" stop-color="#1D9E75" stop-opacity=".25"/></linearGradient>
+  </defs>
+  <rect width="280" height="280" rx="60" fill="url(#bg)"/>
+  <circle cx="60" cy="80" r="90" fill="#185FA5" opacity=".55"/><circle cx="220" cy="200" r="80" fill="#1D9E75" opacity=".45"/>
+  <rect x="95" y="85" width="90" height="115" rx="14" fill="url(#door)" stroke="#fff" stroke-opacity=".4"/>
+  <path d="M95 115 Q140 68 185 115" fill="#378ADD" fill-opacity=".3" stroke="#fff" stroke-opacity=".45"/>
+  <rect x="103" y="125" width="34" height="34" rx="6" fill="#fff" fill-opacity=".12"/><rect x="143" y="125" width="34" height="34" rx="6" fill="#fff" fill-opacity=".12"/>
+  <rect x="103" y="166" width="34" height="26" rx="6" fill="#fff" fill-opacity=".08"/><rect x="143" y="166" width="34" height="26" rx="6" fill="#fff" fill-opacity=".08"/>
+  <circle cx="138" cy="152" r="5" fill="none" stroke="#FAC775" stroke-width="1.5"/><circle cx="138" cy="152" r="3" fill="#FAC775"/>
+</svg>

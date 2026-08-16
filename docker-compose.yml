@@ -40,7 +40,6 @@ services:
       DOORLI_MARKETPLACE_ORDER_STATUS_URL: ${DOORLI_MARKETPLACE_ORDER_STATUS_URL:-https://doorli.me/api/v1/erp-webhooks/order-status}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
-      - assets:/home/frappe/frappe-bench/sites/assets
       - logs:/home/frappe/frappe-bench/logs
 
   configurator:
@@ -65,7 +64,6 @@ services:
       - .env
     volumes:
       - sites:/home/frappe/frappe-bench/sites
-      - assets:/home/frappe/frappe-bench/sites/assets
       - logs:/home/frappe/frappe-bench/logs
 
   create-site:
@@ -133,7 +131,6 @@ services:
       CLIENT_MAX_BODY_SIZE: 50m
     volumes:
       - sites:/home/frappe/frappe-bench/sites
-      - assets:/home/frappe/frappe-bench/sites/assets
       - logs:/home/frappe/frappe-bench/logs
     labels:
       - "traefik.enable=true"
@@ -252,5 +249,4 @@ volumes:
   redis-queue-data:
   redis-cache-data:
   sites:
-  assets:
   logs:

@@ -1,44 +1,312 @@
-/* Doorli Enterprise OS - Proprietary White-Label CSS */
-
-/* 1. Hide all Frappe / ERPNext footprints */
-.powered-by,
-.footer-powered,
-.brand-logo-text,
-.app-logo img[src*="frappe"],
-.app-logo img[src*="erpnext"] {
-    display: none !important;
+/* Doorli Enterprise OS theme. Keeps ERPNext structure and behavior intact. */
+:root {
+    --doorli-navy: #060b1c;
+    --doorli-navy-mid: #0a132e;
+    --doorli-deep: #030712;
+    --doorli-blue: #185fa5;
+    --doorli-sky: #378add;
+    --doorli-teal: #1d9e75;
+    --doorli-mint: #5dcaa5;
+    --doorli-gold: #fac775;
+    --doorli-text: #f4f7fb;
+    --doorli-muted: #9bb4d0;
+    --doorli-line: rgba(255, 255, 255, .10);
+    --doorli-line-strong: rgba(255, 255, 255, .18);
+    --doorli-card: rgba(17, 30, 56, .92);
+    --doorli-shadow: 0 12px 36px rgba(3, 7, 18, .34);
 }
 
-/* 2. Custom Login Screen */
-.login-content {
-    background-color: #0d1117 !important; /* Premium Dark Mode */
-    color: #c9d1d9 !important;
+html, body, .page-container, .layout-main-section-wrapper {
+    background: var(--doorli-navy) !important;
+    color: var(--doorli-text) !important;
 }
 
-.login-body {
+body, .form-control, .btn, .navbar, .sidebar-item-label {
+    font-family: Inter, Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+/* Top navigation */
+.navbar {
+    height: 64px !important;
+    background: rgba(6, 11, 28, .94) !important;
+    border-bottom: 1px solid var(--doorli-line) !important;
+    box-shadow: 0 8px 28px rgba(3, 7, 18, .28) !important;
+    backdrop-filter: blur(18px);
+}
+
+.navbar .navbar-brand, .navbar .nav-link, .navbar .dropdown-toggle,
+.navbar .octicon, .navbar .text-muted, .navbar .user-name {
+    color: var(--doorli-text) !important;
+}
+
+.app-logo {
+    display: inline-flex !important;
+    align-items: center;
+    width: 42px !important;
+    height: 42px !important;
+    margin: 0 20px 0 6px !important;
+    overflow: hidden;
+    border-radius: 12px;
+    background: url("/assets/doorli_core/images/doorli-mark.svg") center / cover no-repeat;
+    box-shadow: 0 5px 20px rgba(24, 95, 165, .35);
+}
+
+.app-logo img, .app-logo .app-logo-text, .brand-logo-text { display: none !important; }
+
+.search-bar .awesomplete, .navbar .search-bar {
+    background: rgba(255, 255, 255, .08) !important;
+    border: 1px solid var(--doorli-line) !important;
+    border-radius: 12px !important;
+}
+
+.search-bar input, .navbar input { color: var(--doorli-text) !important; }
+
+/* Desk sidebar */
+.desk-sidebar, .layout-side-section {
+    background: linear-gradient(180deg, var(--doorli-navy-mid), var(--doorli-deep)) !important;
+    border-right: 1px solid var(--doorli-line) !important;
+}
+
+.desk-sidebar .standard-sidebar-item, .layout-side-section .standard-sidebar-item {
+    color: var(--doorli-muted) !important;
+    border-radius: 10px !important;
+    margin: 3px 10px !important;
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+
+.desk-sidebar .standard-sidebar-item:hover, .layout-side-section .standard-sidebar-item:hover,
+.desk-sidebar .standard-sidebar-item.selected, .layout-side-section .standard-sidebar-item.selected {
+    color: #fff !important;
+    background: linear-gradient(90deg, rgba(24, 95, 165, .38), rgba(29, 158, 117, .18)) !important;
+    border: 1px solid rgba(55, 138, 221, .25) !important;
+}
+
+.sidebar-label, .standard-sidebar-label { color: var(--doorli-muted) !important; }
+
+/* Workspace and page surfaces */
+.layout-main-section, .widget, .widget-group, .onboarding-step,
+.form-dashboard-section, .form-section, .section-head, .page-form {
+    background: var(--doorli-card) !important;
+    border-color: var(--doorli-line) !important;
+    color: var(--doorli-text) !important;
+}
+
+.layout-main-section, .widget, .onboarding-step, .form-dashboard-section {
     border-radius: 16px !important;
-    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5) !important;
-    border: 1px solid #30363d !important;
+    box-shadow: var(--doorli-shadow) !important;
 }
 
-.btn-primary {
-    background-color: #d11f32 !important; /* Doorli Red */
-    border-color: #d11f32 !important;
-}
-.btn-primary:hover {
-    background-color: #b01828 !important;
+.page-head, .page-head.flex, .page-head-content {
+    background: transparent !important;
+    border-color: var(--doorli-line) !important;
 }
 
-/* 3. Mobile-First Super Admin Adjustments */
+.page-title .title-text, .page-head h1, .widget-head .widget-label,
+.widget-head .widget-title, .form-section .section-head, .standard-sidebar-label {
+    color: var(--doorli-text) !important;
+}
+
+.text-muted, .text-secondary, .help-box, .description, .widget-description {
+    color: var(--doorli-muted) !important;
+}
+
+/* Controls */
+.form-control, .control-input, .select2-container .select2-selection,
+.frappe-control input, .frappe-control textarea, .frappe-control select {
+    color: var(--doorli-text) !important;
+    background: rgba(3, 7, 18, .55) !important;
+    border: 1px solid var(--doorli-line-strong) !important;
+    border-radius: 10px !important;
+}
+
+.form-control:focus, .control-input:focus, .frappe-control input:focus,
+.frappe-control textarea:focus, .frappe-control select:focus {
+    border-color: var(--doorli-sky) !important;
+    box-shadow: 0 0 0 3px rgba(55, 138, 221, .18) !important;
+}
+
+.btn-primary, .btn-primary-dark, .btn-primary-light {
+    color: #fff !important;
+    background: linear-gradient(135deg, var(--doorli-blue), var(--doorli-sky)) !important;
+    border-color: var(--doorli-sky) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 5px 18px rgba(24, 95, 165, .32) !important;
+}
+
+.btn-primary:hover, .btn-primary:focus { filter: brightness(1.12); transform: translateY(-1px); }
+.btn-default, .btn-secondary, .btn-light { color: var(--doorli-text) !important; background: rgba(255,255,255,.08) !important; border-color: var(--doorli-line-strong) !important; border-radius: 10px !important; }
+
+/* Lists, tables, dialogs and dropdowns */
+.list-row, .list-row-container, .result, .dropdown-menu, .modal-content,
+.frappe-card, .data-table, .grid-body, .grid-heading-row {
+    color: var(--doorli-text) !important;
+    background: var(--doorli-card) !important;
+    border-color: var(--doorli-line) !important;
+}
+
+.list-row:hover, .result:hover, .dropdown-item:hover { background: rgba(55, 138, 221, .13) !important; }
+.list-row-head, .grid-heading-row { color: var(--doorli-muted) !important; background: rgba(3, 7, 18, .34) !important; }
+.modal-backdrop { background: var(--doorli-deep) !important; }
+.modal-header, .modal-footer { border-color: var(--doorli-line) !important; }
+.dropdown-item, .dropdown-menu a { color: var(--doorli-text) !important; }
+
+/* Login */
+.for-login, .login-content {
+    min-height: 100vh !important;
+    background:
+        radial-gradient(ellipse at 15% 15%, rgba(24, 95, 165, .55), transparent 42%),
+        radial-gradient(ellipse at 85% 80%, rgba(29, 158, 117, .32), transparent 40%),
+        linear-gradient(165deg, var(--doorli-navy), var(--doorli-deep)) !important;
+}
+
+.login-content .login-card, .login-content .login-body, .for-login .page-card {
+    background: rgba(17, 30, 56, .92) !important;
+    border: 1px solid var(--doorli-line-strong) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .42) !important;
+    color: var(--doorli-text) !important;
+}
+
+.login-content .page-card-head, .login-content h4, .login-content label { color: var(--doorli-text) !important; }
+.powered-by, .footer-powered { color: var(--doorli-muted) !important; }
+
 @media (max-width: 768px) {
-    .page-head {
-        padding: 10px !important;
-    }
-    .layout-main-section {
-        padding: 5px !important;
-    }
-    /* Make vendor data tables scrollable natively on mobile */
-    .frappe-list {
-        overflow-x: auto;
-    }
+    .navbar { height: 56px !important; }
+    .layout-main-section, .widget, .onboarding-step { border-radius: 12px !important; }
+    .page-head { padding: 10px !important; }
+    .layout-main-section { padding: 12px !important; }
+    .frappe-list, .datatable { overflow-x: auto !important; }
 }
+
+/* High-clarity workspace mode: Doorli color accents without dark text on dark panels. */
+body:not(.for-login), body:not(.for-login) .page-container,
+body:not(.for-login) .layout-main-section-wrapper {
+    background: #f4f8fc !important;
+    color: #10213f !important;
+}
+
+body:not(.for-login) .navbar {
+    background: #07152f !important;
+    border-bottom-color: rgba(255, 255, 255, .14) !important;
+}
+
+body:not(.for-login) .desk-sidebar, body:not(.for-login) .layout-side-section {
+    background: #ffffff !important;
+    border-right: 1px solid #dce7f2 !important;
+}
+
+body:not(.for-login) .desk-sidebar .standard-sidebar-item,
+body:not(.for-login) .layout-side-section .standard-sidebar-item {
+    color: #526783 !important;
+}
+
+body:not(.for-login) .desk-sidebar .standard-sidebar-item:hover,
+body:not(.for-login) .layout-side-section .standard-sidebar-item:hover,
+body:not(.for-login) .desk-sidebar .standard-sidebar-item.selected,
+body:not(.for-login) .layout-side-section .standard-sidebar-item.selected {
+    color: #12345d !important;
+    background: linear-gradient(90deg, #e8f2ff, #eafaf5) !important;
+    border-color: #c9e0f6 !important;
+}
+
+body:not(.for-login) .layout-main-section, body:not(.for-login) .widget,
+body:not(.for-login) .widget-group, body:not(.for-login) .onboarding-step,
+body:not(.for-login) .form-dashboard-section, body:not(.for-login) .form-section,
+body:not(.for-login) .page-form {
+    background: #ffffff !important;
+    color: #10213f !important;
+    border-color: #dce7f2 !important;
+    box-shadow: 0 8px 26px rgba(25, 68, 112, .08) !important;
+}
+
+body:not(.for-login) .page-title .title-text, body:not(.for-login) .page-head h1,
+body:not(.for-login) .widget-head .widget-label, body:not(.for-login) .widget-head .widget-title,
+body:not(.for-login) .form-section .section-head {
+    color: #10213f !important;
+}
+
+body:not(.for-login) .text-muted, body:not(.for-login) .text-secondary,
+body:not(.for-login) .help-box, body:not(.for-login) .description,
+body:not(.for-login) .widget-description, body:not(.for-login) .sidebar-label,
+body:not(.for-login) .standard-sidebar-label {
+    color: #607591 !important;
+}
+
+body:not(.for-login) .form-control, body:not(.for-login) .control-input,
+body:not(.for-login) .frappe-control input, body:not(.for-login) .frappe-control textarea,
+body:not(.for-login) .frappe-control select {
+    color: #10213f !important;
+    background: #ffffff !important;
+    border-color: #cbdbea !important;
+}
+
+body:not(.for-login) .list-row, body:not(.for-login) .list-row-container,
+body:not(.for-login) .result, body:not(.for-login) .dropdown-menu,
+body:not(.for-login) .modal-content, body:not(.for-login) .frappe-card,
+body:not(.for-login) .data-table, body:not(.for-login) .grid-body,
+body:not(.for-login) .grid-heading-row {
+    color: #10213f !important;
+    background: #ffffff !important;
+    border-color: #dce7f2 !important;
+}
+
+body:not(.for-login) .list-row:hover, body:not(.for-login) .result:hover,
+body:not(.for-login) .dropdown-item:hover {
+    background: #eef7ff !important;
+}
+
+/* Doorli beginner workspace */
+.doorli-workspace {
+    --ws-ink: #10213f;
+    --ws-muted: #607591;
+    --ws-border: #dce7f2;
+    --ws-blue: #2563eb;
+    --ws-green: #10b981;
+    --ws-amber: #f59e0b;
+    --ws-purple: #7c3aed;
+    max-width: 1440px;
+    margin: -16px auto 0;
+    padding: 28px 28px 64px;
+    color: var(--ws-ink);
+    font-family: Inter, Manrope, system-ui, sans-serif;
+}
+.doorli-ws-head { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:26px; }
+.doorli-ws-eyebrow, .doorli-ws-kicker { margin:0 0 6px; color:#16805b; font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+.doorli-ws-head h1, .doorli-ws-section-title h2 { margin:0; color:var(--ws-ink); letter-spacing:-.035em; }
+.doorli-ws-head h1 { font-size:30px; font-weight:750; }
+.doorli-ws-subtitle, .doorli-ws-section-title p, .doorli-ws-advanced > p, .doorli-ws-help p { margin:7px 0 0; color:var(--ws-muted); font-size:13px; }
+.doorli-ws-search { display:flex; align-items:center; min-width:min(100%, 330px); height:44px; padding:0 10px 0 14px; border:1px solid var(--ws-border); border-radius:11px; background:#fff; box-shadow:0 3px 12px rgba(25,68,112,.05); }
+.doorli-ws-search-icon { color:#7b8fa7; font-size:24px; line-height:1; transform:rotate(-20deg); }
+.doorli-ws-search input { min-width:0; flex:1; padding:0 10px; border:0; outline:0; color:var(--ws-ink); font-size:13px; background:transparent; }
+.doorli-ws-search kbd { padding:4px 7px; border:1px solid #d5e1ed; border-radius:5px; color:#71839a; background:#f7fafc; font-size:10px; }
+.doorli-ws-actions { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:20px; }
+.doorli-ws-action, .doorli-ws-module { display:flex; align-items:center; gap:12px; width:100%; text-align:left; cursor:pointer; }
+.doorli-ws-action { min-height:82px; padding:14px; border:1px solid var(--ws-border); border-radius:13px; background:#fff; box-shadow:0 4px 14px rgba(25,68,112,.06); transition:transform .2s, box-shadow .2s, border-color .2s; }
+.doorli-ws-action:hover, .doorli-ws-module:hover { border-color:#8dbce4; box-shadow:0 9px 22px rgba(24,95,165,.13); transform:translateY(-2px); }
+.doorli-ws-icon { display:inline-grid; place-items:center; flex:0 0 auto; width:38px; height:38px; border-radius:10px; color:#2563eb; background:#edf5ff; }
+.doorli-ws-icon svg { width:21px; height:21px; fill:none; stroke:currentColor; stroke-linecap:round; stroke-linejoin:round; stroke-width:1.8; }
+.doorli-ws-action > span:nth-child(2), .doorli-ws-module > span:nth-child(2), .doorli-ws-step > span:nth-child(2) { min-width:0; flex:1; }
+.doorli-ws-action strong, .doorli-ws-action small, .doorli-ws-module strong, .doorli-ws-module small, .doorli-ws-step strong, .doorli-ws-step small { display:block; }
+.doorli-ws-action strong, .doorli-ws-module strong { color:var(--ws-ink); font-size:13px; font-weight:750; }
+.doorli-ws-action small, .doorli-ws-module small { margin-top:4px; color:var(--ws-muted); font-size:11px; line-height:1.35; }
+.doorli-ws-action > .doorli-ws-icon:last-child, .doorli-ws-module > .doorli-ws-icon:last-child { width:24px; height:24px; color:#9aacbe; background:transparent; }
+.doorli-ws-green > .doorli-ws-icon:first-child { color:#16805b; background:#eaf8f2; }.doorli-ws-purple > .doorli-ws-icon:first-child { color:#7c3aed; background:#f3efff; }.doorli-ws-amber > .doorli-ws-icon:first-child { color:#a97812; background:#fff7df; }
+.doorli-ws-onboarding, .doorli-ws-panel { padding:22px; border:1px solid var(--ws-border); border-radius:15px; background:#fff; box-shadow:0 5px 18px rgba(25,68,112,.06); }
+.doorli-ws-onboarding { margin-bottom:20px; }.doorli-ws-section-title { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; }.doorli-ws-section-title h2 { font-size:19px; font-weight:750; }.doorli-ws-progress-label { padding:6px 9px; border-radius:7px; color:#16805b; background:#eaf8f2; font-size:11px; font-weight:750; white-space:nowrap; }.doorli-ws-progress { height:6px; margin:18px 0 16px; overflow:hidden; border-radius:99px; background:#e9eff5; }.doorli-ws-progress span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#2563eb,#10b981); }.doorli-ws-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }.doorli-ws-step { display:flex; align-items:center; gap:10px; min-height:68px; padding:11px; border:1px solid #e5edf4; border-radius:10px; background:#fbfdff; }.doorli-ws-step > .doorli-ws-icon { width:30px; height:30px; color:#71839a; background:#eef3f8; }.doorli-ws-step.is-complete > .doorli-ws-icon { color:#fff; background:#10b981; }.doorli-ws-step.is-next { border-color:#9fc7ef; background:#f7fbff; }.doorli-ws-step strong { font-size:12px; }.doorli-ws-step small { margin-top:3px; color:var(--ws-muted); font-size:10px; }.doorli-ws-step button { padding:6px 8px; border:1px solid #cbdbea; border-radius:7px; color:#185fa5; background:#fff; cursor:pointer; font-size:10px; font-weight:750; white-space:nowrap; }.doorli-ws-step button:hover { color:#fff; background:#2563eb; border-color:#2563eb; }
+.doorli-ws-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:20px; }.doorli-ws-kpi { position:relative; display:flex; align-items:center; gap:12px; min-height:112px; padding:17px; overflow:hidden; border:1px solid var(--ws-border); border-radius:13px; background:#fff; box-shadow:0 4px 14px rgba(25,68,112,.05); }.doorli-ws-kpi-icon { display:grid; place-items:center; width:40px; height:40px; border-radius:11px; }.doorli-ws-kpi-icon .doorli-ws-icon { color:inherit; background:transparent; }.doorli-ws-blue { color:#2563eb; background:#edf5ff; }.doorli-ws-green { color:#16805b; background:#eaf8f2; }.doorli-ws-amber { color:#a97812; background:#fff7df; }.doorli-ws-purple { color:#7c3aed; background:#f3efff; }.doorli-ws-kpi small, .doorli-ws-kpi strong, .doorli-ws-kpi em { display:block; }.doorli-ws-kpi small { color:var(--ws-muted); font-size:11px; }.doorli-ws-kpi strong { margin-top:4px; color:var(--ws-ink); font-size:23px; letter-spacing:-.03em; }.doorli-ws-kpi em { margin-top:3px; color:#71839a; font-size:10px; font-style:normal; }.doorli-ws-kpi em.is-positive { color:#16805b; }.doorli-ws-kpi em.is-warning { color:#a97812; }.doorli-ws-spark { position:absolute; right:13px; bottom:16px; display:flex; align-items:flex-end; gap:3px; height:30px; opacity:.8; }.doorli-ws-spark i { display:block; width:4px; border-radius:3px; background:#2563eb; }.doorli-ws-spark i:nth-child(1){height:10px}.doorli-ws-spark i:nth-child(2){height:16px}.doorli-ws-spark i:nth-child(3){height:12px}.doorli-ws-spark i:nth-child(4){height:23px}.doorli-ws-spark i:nth-child(5){height:18px}.doorli-ws-spark i:nth-child(6){height:28px}.doorli-ws-spark.amber i{background:#f59e0b}.doorli-ws-gauge { position:absolute; right:15px; bottom:22px; width:42px; height:42px; border:5px solid #edf5ff; border-top-color:#10b981; border-right-color:#10b981; border-radius:50%; transform:rotate(25deg); }.doorli-ws-gauge.purple { border-top-color:#7c3aed; border-right-color:#7c3aed; }
+.doorli-ws-columns { display:grid; grid-template-columns:1.7fr 1fr; gap:20px; }.doorli-ws-modules { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:18px; }.doorli-ws-module { min-height:70px; padding:11px; border:1px solid #e3ebf3; border-radius:10px; background:#fbfdff; transition:transform .2s, box-shadow .2s, border-color .2s; }.doorli-ws-module > .doorli-ws-icon:first-child { width:34px; height:34px; }.doorli-ws-module:nth-child(2) > .doorli-ws-icon:first-child { color:#16805b; background:#eaf8f2; }.doorli-ws-module:nth-child(3) > .doorli-ws-icon:first-child { color:#7c3aed; background:#f3efff; }.doorli-ws-module:nth-child(4) > .doorli-ws-icon:first-child { color:#a97812; background:#fff7df; }.doorli-ws-module:nth-child(5) > .doorli-ws-icon:first-child { color:#137f86; background:#e9f9f8; }.doorli-ws-module:nth-child(6) > .doorli-ws-icon:first-child { color:#d65f45; background:#fff1ed; }.doorli-ws-text-button { border:0; color:#185fa5; background:transparent; cursor:pointer; font-size:12px; font-weight:750; }.doorli-ws-advanced { background:linear-gradient(145deg,#fff,#f7fbff); }.doorli-ws-advanced > .doorli-ws-section-title > .doorli-ws-icon { color:#7c3aed; background:#f3efff; }.doorli-ws-advanced-row { display:flex; align-items:center; justify-content:space-between; width:100%; margin-top:13px; padding:12px 0; border:0; border-top:1px solid #e8eef4; color:#526783; background:transparent; cursor:pointer; text-align:left; font-size:12px; }.doorli-ws-advanced-row:hover { color:#185fa5; }.doorli-ws-advanced-row > .doorli-ws-icon { width:22px; height:22px; color:#9aacbe; background:transparent; }.doorli-ws-help { display:flex; align-items:center; gap:13px; margin-top:20px; padding:16px 18px; border:1px solid #cfe2f4; border-radius:12px; background:#edf7ff; }.doorli-ws-help-icon { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; color:#fff; background:#2563eb; font-weight:800; }.doorli-ws-help strong { color:var(--ws-ink); font-size:13px; }.doorli-ws-help p { margin-top:3px; }.doorli-ws-help button { margin-left:auto; border:0; color:#185fa5; background:transparent; cursor:pointer; font-size:12px; font-weight:750; }
+.doorli-workspace button:focus-visible, .doorli-workspace input:focus-visible { outline:3px solid rgba(37,99,235,.35); outline-offset:2px; }
+@media (max-width: 1050px) { .doorli-ws-actions, .doorli-ws-kpis { grid-template-columns:repeat(2,1fr); }.doorli-ws-columns { grid-template-columns:1fr; } }
+@media (max-width: 700px) { .doorli-workspace { margin:0 -8px; padding:18px 14px 44px; }.doorli-ws-head { display:block; }.doorli-ws-head h1 { font-size:25px; }.doorli-ws-search { margin-top:16px; }.doorli-ws-actions, .doorli-ws-kpis, .doorli-ws-steps { grid-template-columns:1fr; }.doorli-ws-modules { grid-template-columns:1fr; }.doorli-ws-help { align-items:flex-start; flex-wrap:wrap; }.doorli-ws-help button { width:100%; margin-left:43px; text-align:left; } }
+
+.doorli-ws-breadcrumb { display:flex; align-items:center; gap:9px; margin-bottom:22px; color:#71839a; font-size:12px; }.doorli-ws-breadcrumb button { padding:0; border:0; color:#185fa5; background:transparent; cursor:pointer; font-size:12px; font-weight:750; }.doorli-ws-breadcrumb button:hover { text-decoration:underline; }
+.navbar .dropdown-menu, .navbar .dropdown-menu a, .navbar .dropdown-menu button, .navbar .dropdown-menu .dropdown-item, .navbar .dropdown-menu .text-muted { color:#10213f !important; }
+.navbar .dropdown-menu { background:#ffffff !important; border:1px solid #dce7f2 !important; box-shadow:0 14px 34px rgba(16,33,63,.16) !important; }
+.navbar .dropdown-menu .dropdown-item:hover, .navbar .dropdown-menu a:hover, .navbar .dropdown-menu button:hover { color:#185fa5 !important; background:#eef7ff !important; }
+.navbar .dropdown-menu hr, .navbar .dropdown-menu .dropdown-divider { border-color:#dce7f2 !important; }
+.powered-by, .footer-powered, .footer-powered-by, .navbar .brand-logo-text, .app-logo img[src*="frappe"], .app-logo img[src*="erpnext"] { display:none !important; }
+.navbar .app-logo { background-image:url("/assets/doorli_core/images/doorli-mark.svg") !important; background-position:center !important; background-repeat:no-repeat !important; background-size:contain !important; }
+.navbar .app-logo::after { content:"Doorli"; position:absolute; left:48px; color:#fff; font-size:15px; font-weight:750; letter-spacing:-.02em; white-space:nowrap; }
+.doorli-module-workspace .doorli-ws-head { margin-bottom:22px; }.doorli-module-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:13px; margin-bottom:20px; }.doorli-ws-module-metric { display:flex; align-items:center; gap:13px; min-height:92px; padding:16px; border:1px solid var(--ws-border); border-radius:13px; background:#fff; box-shadow:0 4px 14px rgba(25,68,112,.05); }.doorli-ws-module-metric > .doorli-ws-icon { width:42px; height:42px; }.doorli-ws-module-metric small, .doorli-ws-module-metric strong { display:block; }.doorli-ws-module-metric small { color:var(--ws-muted); font-size:11px; }.doorli-ws-module-metric strong { margin-top:4px; color:var(--ws-ink); font-size:24px; }.doorli-ws-module-metric.doorli-ws-red { color:#dc2626; background:#fff7f7; }.doorli-ws-module-metric.doorli-ws-red > .doorli-ws-icon { color:#dc2626; background:#ffecec; }.doorli-ws-module-metric.doorli-ws-green { color:#16805b; background:#f7fdf9; }.doorli-ws-module-metric.doorli-ws-green > .doorli-ws-icon { color:#16805b; background:#eaf8f2; }.doorli-ws-module-metric.doorli-ws-amber { color:#a97812; background:#fffdf6; }.doorli-ws-module-metric.doorli-ws-amber > .doorli-ws-icon { color:#a97812; background:#fff7df; }.doorli-ws-module-metric.doorli-ws-purple { color:#7c3aed; background:#fbfaff; }.doorli-ws-module-metric.doorli-ws-purple > .doorli-ws-icon { color:#7c3aed; background:#f3efff; }.doorli-ws-module-metric.doorli-ws-blue { color:#2563eb; background:#f7fbff; }.doorli-ws-module-metric.doorli-ws-blue > .doorli-ws-icon { color:#2563eb; background:#edf5ff; }
+.doorli-ws-module-actions { margin-bottom:20px; }.doorli-ws-module-actions .doorli-ws-actions { margin:18px 0 0; }.doorli-ws-module-list { margin-bottom:20px; }.doorli-ws-module-list .doorli-ws-modules { margin-top:18px; }.doorli-ws-module-list .doorli-ws-module { min-height:82px; }
+@media (max-width:700px) { .doorli-module-metrics { grid-template-columns:1fr; }.doorli-ws-module-actions .doorli-ws-actions { grid-template-columns:1fr; } }

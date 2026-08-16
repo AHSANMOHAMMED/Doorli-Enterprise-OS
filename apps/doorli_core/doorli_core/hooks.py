@@ -4,9 +4,7 @@ app_publisher = "Doorli"
 app_description = "Core logic for Doorli Enterprise ERP"
 app_email = "engineering@doorli.com"
 app_license = "Proprietary"
-
-# --- Doorli White-Labeling Overrides ---
-app_logo_url = "/assets/doorli_core/images/logo.png"
+app_logo_url = "/assets/doorli_core/images/doorli-mark.svg"
 
 # Bootstrap the super-admin control fields after migrate.
 after_migrate = ["doorli_core.control.after_migrate"]
@@ -14,12 +12,7 @@ after_migrate = ["doorli_core.control.after_migrate"]
 # Inject custom CSS when assets exist
 app_include_css = "doorli.bundle.css"
 web_include_css = "doorli.bundle.css"
-
-# Static website context (callable update_website_context removed — Frappe expects method paths)
-website_context = {
-    "favicon": "/assets/doorli_core/images/logo.png",
-    "splash_image": "/assets/doorli_core/images/logo.png",
-}
+app_include_js = "doorli_workspace.js"
 
 # --- Two-Way Sync ---
 # Sales Order lifecycle drives confirmed/cancelled; Delivery Note submission
