@@ -12,8 +12,8 @@ app_logo_url = "/assets/doorli_core/images/logo.png"
 after_migrate = ["doorli_core.control.after_migrate"]
 
 # Inject custom CSS when assets exist
-app_include_css = "/assets/doorli_core/css/doorli.bundle.css"
-web_include_css = "/assets/doorli_core/css/doorli.bundle.css"
+app_include_css = "doorli.bundle.css"
+web_include_css = "doorli.bundle.css"
 
 # Static website context (callable update_website_context removed — Frappe expects method paths)
 website_context = {
