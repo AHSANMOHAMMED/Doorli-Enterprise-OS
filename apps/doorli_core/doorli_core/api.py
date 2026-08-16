@@ -5,6 +5,7 @@ import os
 import re
 
 import frappe
+import requests
 from frappe import _
 
 
@@ -428,6 +429,75 @@ def get_inventory(**kwargs):
     rows = frappe.get_all("Stock Ledger Entry", filters=filters, fields=["actual_qty", "warehouse"])
     quantity = sum(float(row.get("actual_qty") or 0) for row in rows)
     return {"status": "success", "data": [{"actual_qty": quantity, "warehouse": warehouse or None}]}
+
+
+@frappe.whitelist(allow_guest=True)
+def sync_products(**kwargs):
+    """Export a company-scoped Item catalog to the Marketplace product webhook."""
+    verify_doorli_webhook()
+    company = (kwargs.get("company") or "").strip()
+    if not company or not frappe.db.exists("Company", company):
+        frappe.local.response.http_status_code = 400 if company else 400
+        return {"status": "error", "message": "A valid company is required"}
+
+    target = os.environ.get("DOORLI_MARKETPLACE_PRODUCT_SYNC_URL", "").strip()
+    if not target:
+        frappe.local.response.http_status_code = 503
+        return {"status": "error", "message": "Marketplace product sync URL is not configured"}
+
+    raw_codes = kwargs.get("item_codes") or []
+    if isinstance(raw_codes, str):
+        raw_codes = [code.strip() for code in raw_codes.split(",") if code.strip()]
+    filters = {"disabled": 0, "is_stock_item": 1}
+    if raw_codes:
+        filters["name"] = ["in", list(dict.fromkeys(raw_codes))]
+
+    items = frappe.get_all(
+        "Item",
+        filters=filters,
+        fields=["name", "item_code", "item_name", "description", "item_group", "stock_uom", "standard_rate", "barcode", "disabled"],
+        order_by="name asc",
+        limit_page_length=10000,
+    )
+    stock_rows = frappe.db.sql(
+        """SELECT b.item_code, COALESCE(SUM(b.actual_qty), 0) AS quantity
+           FROM `tabBin` b INNER JOIN `tabWarehouse` w ON w.name = b.warehouse
+           WHERE w.company = %s GROUP BY b.item_code""",
+        company,
+        as_dict=True,
+    )
+    stock = {row["item_code"]: float(row.get("quantity") or 0) for row in stock_rows}
+    products = [{
+        "erp_tenant_id": company,
+        "erp_item_id": item["name"],
+        "sku": item.get("item_code") or item["name"],
+        "barcode": item.get("barcode"),
+        "name": item.get("item_name") or item["name"],
+        "description": item.get("description"),
+        "price": float(item.get("standard_rate") or 0),
+        "unit": item.get("stock_uom"),
+        "category": item.get("item_group"),
+        "stock_quantity": stock.get(item["name"], 0),
+        "is_active": not bool(item.get("disabled")),
+    } for item in items]
+
+    if not products:
+        return {"status": "success", "company": company, "synced": 0, "failed": 0}
+
+    try:
+        response = requests.post(
+            target,
+            json={"products": products},
+            headers={"X-ERP-Secret": _expected_secret(), "Content-Type": "application/json"},
+            timeout=15,
+        )
+        response.raise_for_status()
+        result = response.json()
+        return {"status": "success", "company": company, "exported": len(products), "marketplace": result}
+    except Exception as exc:
+        frappe.log_error(frappe.get_traceback(), _("Doorli product catalog sync failed"))
+        frappe.local.response.http_status_code = 502
+        return {"status": "error", "company": company, "exported": len(products), "message": str(exc)}
 
 # ---------------------------------------------------------------------------
 # Super-admin control plane passthroughs.

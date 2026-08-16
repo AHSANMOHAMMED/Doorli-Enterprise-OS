@@ -38,6 +38,7 @@ services:
     environment:
       DOORLI_WEBHOOK_SECRET: ${DOORLI_WEBHOOK_SECRET:?DOORLI_WEBHOOK_SECRET must be set in .env}
       DOORLI_MARKETPLACE_ORDER_STATUS_URL: ${DOORLI_MARKETPLACE_ORDER_STATUS_URL:-https://doorli.me/api/v1/erp-webhooks/order-status}
+      DOORLI_MARKETPLACE_PRODUCT_SYNC_URL: ${DOORLI_MARKETPLACE_PRODUCT_SYNC_URL:-https://doorli.me/api/v1/erp-webhooks/product-sync}
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs

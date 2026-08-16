@@ -123,3 +123,80 @@ Authenticated checks should cover Home, Accounting, Stock, Selling, Buying, CRM,
 - Rotate `DOORLI_WEBHOOK_SECRET` if it is exposed.
 - Keep the Enterprise database isolated from Marketplace databases.
 - Review user roles quarterly and disable test accounts before production use.
+
+## Completion Program
+
+Enterprise OS is complete only when the application, integration contract, operational controls, and recovery procedures pass their gates.
+
+### Verification Environment
+
+- OCI production is the authoritative Enterprise runtime.
+- Live Enterprise URL: `https://enterprise.doorli.me`.
+- Marketplace integration URL: `https://doorli.me`.
+- Local Docker/database availability is not treated as production evidence.
+- Every change must record its OCI deployment/migration command and live smoke result before being marked deployed.
+
+### OCI Verification Log — 2026-08-16
+
+- `https://enterprise.doorli.me/api/method/frappe.ping`: HTTP `200`, `pong`.
+- Marketplace health checked from OCI-facing public endpoint: HTTP `200`, database and Redis healthy.
+- Current working-tree changes require an OCI release before live status is updated.
+
+### Current Completed Work
+
+- [x] Frappe/ERPNext production runtime with MariaDB, Redis, workers, scheduler, WebSocket, Nginx, and HTTPS ingress.
+- [x] Doorli webhook authentication and tenant control checks.
+- [x] Vendor provisioning with Company and scoped user access.
+- [x] Idempotent order creation and order status callbacks.
+- [x] Tenant-aware inventory lookup.
+- [x] Doorli-branded visual Home and module workspaces.
+- [x] Plain-English sidebar labels and role-preserving navigation.
+- [x] Persistent asset-volume fix preventing CSS/JS 404s.
+
+### Remaining Implementation Tasks
+
+- [x] Add authenticated Enterprise product catalog export/synchronization to Marketplace.
+- [x] Marketplace now durably records Enterprise callback failures and exposes operator retry endpoints.
+- [ ] Add Enterprise integration reconciliation dashboard.
+- [ ] Add automated Enterprise CI with bench migration and authenticated smoke tests.
+- [x] Add Enterprise database/site-file backup and archive verification scripts.
+- [ ] Execute and record a production-like MariaDB/site restore drill.
+- [ ] Move production secrets to a managed secret store.
+- [x] Require Enterprise webhook, database, and administrator credentials through `.env` instead of repository defaults.
+- [ ] Add WAF, DDoS controls, origin restriction, and intrusion monitoring.
+- [ ] Complete role-by-role authenticated tests for every workspace.
+- [ ] Complete browser accessibility testing for keyboard, contrast, screen readers, and touch.
+- [ ] Validate all provider-dependent features with real payment, email, SMS, storage, maps, and delivery credentials.
+- [ ] Add load, queue saturation, database failover, and worker-restart tests.
+- [ ] Complete release canary and rollback procedures.
+
+### Enterprise Acceptance Gates
+
+- [ ] Every integration request has authentication, validation, idempotency, timeout, retry, and audit behavior.
+- [ ] Every user-facing action has loading, success, empty, error, and retry states.
+- [ ] Every role sees only the workspaces and records permitted by native Frappe permissions.
+- [ ] No framework branding, missing assets, placeholder credentials, or unhandled 404s remain.
+- [ ] A clean deployment can rebuild assets, migrate the site, start all workers, and pass smoke checks.
+- [ ] A backup can be restored into a clean Enterprise environment and verified with an authenticated order flow.
+
+### Task Evidence Format
+
+For every completed task record:
+
+- Implementation files and migration name
+- Test command and result
+- Production verification command and result
+- Required external credentials or operator action
+- Remaining risk and next task
+
+### Progress Log — 2026-08-16
+
+- Enterprise visual workspaces, branding, asset persistence, and role-preserving navigation are deployed.
+- Marketplace customer identity migration `20260816100000_erp_customer_links` is applied in the connected production database.
+- Marketplace stock callback matching and vendor provisioning email handling are corrected.
+- The Marketplace control gate now fails closed when control state is unavailable.
+- Enterprise assets and Frappe ping were verified after the integration deployment.
+- Implemented authenticated catalog export; set `DOORLI_MARKETPLACE_PRODUCT_SYNC_URL` and verify the production trigger before marking this operationally complete.
+- Marketplace now runs scheduled reconciliation for Enterprise callback failures; production verification depends on the Marketplace migration and reconciliation environment variables being deployed.
+- Added `scripts/backup-enterprise.sh` and `scripts/verify-enterprise-backup.sh`; live restore validation remains a deployment gate.
+- Enterprise Compose keeps Frappe backend bound to localhost and requires `DOORLI_WEBHOOK_SECRET`; managed secret storage and external exposure scanning remain production gates.
