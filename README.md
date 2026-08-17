@@ -203,3 +203,5 @@ For every completed task record:
 - Added timestamped HMAC verification for all Doorli guest write methods and signed Marketplace catalog exports; signatures expire after five minutes.
 - Added Enterprise CI, Python compilation checks, production smoke script, and backup-tool validation.
 - Enterprise smoke returned HTTP `200` from `/api/method/ping` on 2026-08-17. Live restore, bench migration, and managed-secret validation still require an operator-controlled production-like environment.
+- Enterprise backend image was rebuilt from the signed-webhook implementation and recreated on OCI; public ping and security-header smoke checks passed.
+- Production backup `enterprise-20260817T060932Z.tar.gz` completed and passed checksum/archive verification.

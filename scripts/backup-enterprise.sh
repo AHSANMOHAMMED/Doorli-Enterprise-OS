@@ -16,9 +16,12 @@ set +a
 SITE="$FRAPPE_SITE_NAME_HEADER"
 
 # bench creates a compressed SQL dump and copies private/public files into the
-# site's private/backups directory. The archive preserves both for a full restore.
-docker compose -f "$ROOT/docker-compose.yml" exec -T backend \
-  bash -lc "bench --site '$SITE' backup --with-files --compress && tar -C /home/frappe/frappe-bench/sites -czf - '$SITE/private/backups'" > "$OUTPUT"
+# site's private/backups directory. Run it separately so bench/Compose status
+# text cannot corrupt the binary archive stream.
+BACKEND_CONTAINER="$(docker compose -f "$ROOT/docker-compose.yml" ps -q backend)"
+test -n "$BACKEND_CONTAINER"
+docker exec "$BACKEND_CONTAINER" bash -lc "bench --site '$SITE' backup --with-files --compress" >"$BACKUP_DIR/enterprise-$STAMP.log" 2>&1
+docker exec "$BACKEND_CONTAINER" tar -C /home/frappe/frappe-bench/sites -czf - "$SITE/private/backups" > "$OUTPUT"
 
 test -s "$OUTPUT"
 sha256sum "$OUTPUT" > "$OUTPUT.sha256"
