@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import re
+import time
 
 import frappe
 import requests
@@ -26,22 +27,43 @@ def _expected_secret():
 
 
 def verify_doorli_webhook():
-    # Use a custom header, NOT Authorization: Frappe treats `Authorization: Bearer`
-    # as an OAuth token and rejects the request before guest methods run.
-    header = frappe.request.headers.get("X-Doorli-Secret") or ""
-    if not header:
-        # Backwards-compatible fallback for older marketplace builds.
-        auth = frappe.request.headers.get("Authorization") or ""
-        header = auth[len("Bearer "):] if auth.startswith("Bearer ") else auth
-    provided = header.strip()
     expected = _expected_secret()
-    # Constant-time comparison to avoid leaking the secret via timing.
-    if not provided or not hmac.compare_digest(provided, expected):
+    timestamp = frappe.request.headers.get("X-Doorli-Timestamp") or ""
+    provided = (frappe.request.headers.get("X-Doorli-Signature") or "").replace("sha256=", "", 1).strip()
+    valid = False
+    try:
+        timestamp_value = int(timestamp)
+        if abs(int(time.time()) - timestamp_value) <= 300 and provided:
+            raw_body = frappe.request.get_data(cache=True, as_text=True) or "{}"
+            payload = f"{timestamp_value}.{raw_body}"
+            expected_signature = hmac.new(expected.encode(), payload.encode(), hashlib.sha256).hexdigest()
+            valid = hmac.compare_digest(provided, expected_signature)
+    except (TypeError, ValueError):
+        valid = False
+
+    if not valid:
         frappe.local.response.http_status_code = 403
         frappe.throw(
-            _("Unauthorized. Invalid Doorli Enterprise Webhook Secret."),
+            _("Unauthorized. Invalid or expired Doorli webhook signature."),
             frappe.PermissionError,
         )
+
+
+def _signed_headers(payload):
+    timestamp = str(int(time.time()))
+    body = json.dumps(payload, separators=(",", ":"), ensure_ascii=False)
+    signature = hmac.new(
+        _expected_secret().encode(), f"{timestamp}.{body}".encode(), hashlib.sha256
+    ).hexdigest()
+    return {
+        "Content-Type": "application/json",
+        "X-Doorli-Timestamp": timestamp,
+        "X-Doorli-Signature": f"sha256={signature}",
+    }
+
+
+def _signed_body(payload):
+    return json.dumps(payload, separators=(",", ":"), ensure_ascii=False)
 
 
 # ---------------------------------------------------------------------------
@@ -485,10 +507,11 @@ def sync_products(**kwargs):
         return {"status": "success", "company": company, "synced": 0, "failed": 0}
 
     try:
+        payload = {"products": products}
         response = requests.post(
             target,
-            json={"products": products},
-            headers={"X-ERP-Secret": _expected_secret(), "Content-Type": "application/json"},
+            data=_signed_body(payload).encode("utf-8"),
+            headers=_signed_headers(payload),
             timeout=15,
         )
         response.raise_for_status()

@@ -200,3 +200,6 @@ For every completed task record:
 - Marketplace now runs scheduled reconciliation for Enterprise callback failures; production verification depends on the Marketplace migration and reconciliation environment variables being deployed.
 - Added `scripts/backup-enterprise.sh` and `scripts/verify-enterprise-backup.sh`; live restore validation remains a deployment gate.
 - Enterprise Compose keeps Frappe backend bound to localhost and requires `DOORLI_WEBHOOK_SECRET`; managed secret storage and external exposure scanning remain production gates.
+- Added timestamped HMAC verification for all Doorli guest write methods and signed Marketplace catalog exports; signatures expire after five minutes.
+- Added Enterprise CI, Python compilation checks, production smoke script, and backup-tool validation.
+- Enterprise smoke returned HTTP `200` from `/api/method/ping` on 2026-08-17. Live restore, bench migration, and managed-secret validation still require an operator-controlled production-like environment.
